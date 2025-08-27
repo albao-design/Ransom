@@ -3,32 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Ransom Note Generator</title>
+    <title>Ransom Note Generator</title>
+    
+    <!-- P5.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    
+    <!-- Our custom styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Ransom Note Generator</h1>
-            <p>Create expressive typography with AI-powered font selection</p>
-        </header>
-        
-        <div class="input-section">
-            <textarea id="textInput" placeholder="Enter your message..." maxlength="100"></textarea>
-            <button id="generateBtn">Generate</button>
+    <div class="app-container">
+        <div class="controls-panel">
+            <header>
+                <h1>Ransom Note Generator</h1>
+                <p>Create expressive typography</p>
+            </header>
+            
+            <!-- TEXT INPUT SECTION - This was missing! -->
+            <div class="input-section">
+                <label for="textInput">Your Message</label>
+                <textarea id="textInput" placeholder="Enter your message..." maxlength="100"></textarea>
+                <button id="generateBtn">Generate</button>
+            </div>
+            
+            <div class="effects-section">
+                <h3>Text Effects</h3>
+                
+                <div class="control-group">
+                    <label>Blur <span class="range-value">0px</span></label>
+                    <input type="range" id="blur" min="0" max="10" value="0" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label>Spacing <span class="range-value">20px</span></label>
+                    <input type="range" id="spacing" min="0" max="50" value="20" step="2">
+                </div>
+                
+                <div class="control-group">
+                    <label>Stretch <span class="range-value">100%</span></label>
+                    <input type="range" id="stretch" min="50" max="200" value="100" step="5">
+                </div>
+                
+                <div class="control-group">
+                    <label>Size Variation <span class="range-value">24px</span></label>
+                    <input type="range" id="sizeVariation" min="0" max="40" value="24" step="2">
+                </div>
+                
+                <div class="control-group">
+                    <label>Stroke Weight <span class="range-value">0px</span></label>
+                    <input type="range" id="strokeWeight" min="0" max="8" value="0" step="0.5">
+                </div>
+                
+                <div class="control-group">
+                    <label>Distortion <span class="range-value">0°</span></label>
+                    <input type="range" id="distortion" min="0" max="30" value="0" step="1">
+                </div>
+            </div>
         </div>
         
         <div class="canvas-container">
             <div id="p5-container"></div>
         </div>
-        
-        <div class="loading" id="loading" style="display: none;">
-            <p>Loading fonts...</p>
-        </div>
     </div>
     
-    <script src="fonts.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
