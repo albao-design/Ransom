@@ -7,9 +7,10 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0a0a0a;
+    background: #ffffff;
     color: #ffffff;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
 /* Main app layout */
@@ -49,7 +50,7 @@ header p {
     line-height: 1.4;
 }
 
-/* INPUT SECTION STYLES - These were missing! */
+/* INPUT SECTION STYLES */
 .input-section {
     margin-bottom: 32px;
     padding-bottom: 24px;
@@ -111,16 +112,69 @@ header p {
     transform: translateY(1px);
 }
 
-/* Effects section */
-.effects-section h3 {
+/* COLLAPSIBLE SECTIONS */
+.collapsible-section {
+    margin-bottom: 24px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 24px;
+}
+
+.collapsible-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 12px 0;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.section-header:hover {
+    color: #0066cc;
+}
+
+.section-header h3 {
     font-size: 16px;
     font-weight: 500;
-    margin-bottom: 20px;
     color: #ffffff;
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.section-header:hover h3 {
+    color: #0066cc;
+}
+
+.chevron {
+    color: #888;
+    transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.section-header:hover .chevron {
+    color: #0066cc;
+}
+
+.chevron.rotated {
+    transform: rotate(180deg);
+}
+
+.section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.section-content.expanded {
+    max-height: 1000px;
 }
 
 .control-group {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
+    margin-top: 16px;
 }
 
 .control-group label {
@@ -179,25 +233,94 @@ input[type="range"]::-moz-range-thumb:hover {
     background: #0056b3;
 }
 
-/* Canvas container */
+/* Animation controls */
+.animation-select {
+    width: 100%;
+    padding: 8px 12px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+.animation-select:focus {
+    outline: none;
+    border-color: #0066cc;
+}
+
+.animation-select option {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+.animation-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.animation-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: #333;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.animation-btn:hover {
+    background: #444;
+}
+
+.animation-btn:active {
+    background: #222;
+    transform: translateY(1px);
+}
+
+.animation-btn.active {
+    background: #0066cc;
+}
+
+.animation-btn.active:hover {
+    background: #0056b3;
+}
+
+/* Canvas container - full white background */
 .canvas-container {
     flex: 1;
-    background: #0a0a0a;
+    background: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 40px;
     min-width: 0;
 }
 
 #p5-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    height: 100%;
 }
 
-/* Responsive design */
+#p5-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Mobile responsiveness */
 @media (max-width: 768px) {
     .app-container {
         flex-direction: column;
@@ -207,16 +330,35 @@ input[type="range"]::-moz-range-thumb:hover {
         width: 100%;
         max-height: 50vh;
         order: 2;
+        padding: 16px;
     }
     
     .canvas-container {
         order: 1;
         min-height: 50vh;
-        padding: 20px;
+    }
+    
+    .animation-controls {
+        flex-direction: column;
+    }
+    
+    .animation-btn {
+        padding: 12px;
+        font-size: 12px;
     }
 }
 
-/* Scrollbar styling for webkit browsers */
+@media (max-width: 480px) {
+    .controls-panel {
+        padding: 12px;
+    }
+    
+    .control-group {
+        margin-bottom: 16px;
+    }
+}
+
+/* Scrollbar styling */
 .controls-panel::-webkit-scrollbar {
     width: 6px;
 }
