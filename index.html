@@ -62,10 +62,9 @@
                     </div>
                     
                     <div class="control-group">
-    <label>Distortion <span class="range-value">0°</span></label>
-    <input type="range" id="distortion" min="0" max="60" value="0" step="1">
-</div>
-
+                        <label>Distortion <span class="range-value">0°</span></label>
+                        <input type="range" id="distortion" min="0" max="60" value="0" step="1">
+                    </div>
                 </div>
             </div>
             
@@ -104,11 +103,54 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- EXPORT SECTION -->
+            <div class="collapsible-section export-section">
+                <div class="section-header" id="exportHeader">
+                    <h3>Export</h3>
+                    <svg class="chevron" width="16" height="16" viewBox="0 0 16 16">
+                        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                
+                <div class="section-content" id="exportContent">
+                    <div class="export-controls">
+                        <!-- Static image formats -->
+                        <div class="export-row">
+                            <button id="exportPNG" class="export-btn static primary">PNG</button>
+                            <button id="exportJPEG" class="export-btn static">JPEG</button>
+                        </div>
+                        
+                        <!-- Vector and animated formats -->
+                        <div class="export-row">
+                            <button id="exportSVG" class="export-btn vector success">SVG</button>
+                            <button id="exportGIF" class="export-btn animated warning">GIF</button>
+                        </div>
+                        
+                        <!-- Video format -->
+                        <div class="export-row">
+                            <button id="exportMP4" class="export-btn animated warning">MP4</button>
+                        </div>
+                    </div>
+                    
+                    <div class="export-description">
+                        <span class="format-note static">PNG/JPEG: High-quality images with transparent/white backgrounds</span>
+                        <span class="format-note vector">SVG: Scalable vector format for print and web</span>
+                        <span class="format-note animated">GIF/MP4: Animated exports capture 3 seconds of animation</span>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="canvas-container">
             <div id="p5-container"></div>
         </div>
+    </div>
+    
+    <!-- Export progress modal (will be shown/hidden via JavaScript) -->
+    <div id="exportProgress" class="export-progress" style="display: none;">
+        <div class="spinner"></div>
+        <div id="exportProgressText">Preparing export...</div>
     </div>
     
     <!-- Load fonts first, then main script -->

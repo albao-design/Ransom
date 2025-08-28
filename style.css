@@ -280,6 +280,176 @@ input[type="range"]::-moz-range-thumb {
     background: #0056b3;
 }
 
+/* EXPORT SECTION STYLES */
+.export-section {
+    margin-bottom: 0; /* Last section */
+}
+
+.export-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.export-row {
+    display: flex;
+    gap: 8px;
+}
+
+.export-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: #2d2d2d;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.export-btn:hover {
+    background: #3d3d3d;
+    transform: translateY(-1px);
+}
+
+.export-btn:active {
+    background: #1d1d1d;
+    transform: translateY(0px);
+}
+
+.export-btn.primary {
+    background: #0066cc;
+}
+
+.export-btn.primary:hover {
+    background: #0056b3;
+}
+
+.export-btn.success {
+    background: #28a745;
+}
+
+.export-btn.success:hover {
+    background: #218838;
+}
+
+.export-btn.warning {
+    background: #fd7e14;
+}
+
+.export-btn.warning:hover {
+    background: #e8650e;
+}
+
+.export-btn:disabled {
+    background: #1a1a1a;
+    color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.export-btn:disabled:hover {
+    background: #1a1a1a;
+    transform: none;
+}
+
+/* Export format indicators */
+.export-btn::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.export-btn.static::after {
+    background: #28a745; /* Green for static formats */
+}
+
+.export-btn.animated::after {
+    background: #fd7e14; /* Orange for animated formats */
+}
+
+.export-btn.vector::after {
+    background: #6f42c1; /* Purple for vector formats */
+}
+
+.export-btn:hover::after {
+    opacity: 1;
+}
+
+/* Export progress styles */
+.export-progress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 24px 32px;
+    border-radius: 8px;
+    z-index: 1000;
+    font-size: 14px;
+    text-align: center;
+    min-width: 200px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid #333;
+}
+
+.export-progress .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #333;
+    border-radius: 50%;
+    border-top-color: #0066cc;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Export format descriptions */
+.export-description {
+    font-size: 11px;
+    color: #888;
+    margin-top: 8px;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.export-description .format-note {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.export-description .format-note.static {
+    color: #28a745;
+}
+
+.export-description .format-note.animated {
+    color: #fd7e14;
+}
+
+.export-description .format-note.vector {
+    color: #6f42c1;
+}
+
 /* Canvas container - full white background */
 .canvas-container {
     flex: 1;
@@ -329,11 +499,17 @@ input[type="range"]::-moz-range-thumb {
         min-height: 50vh;
     }
     
-    .animation-controls {
+    .animation-controls,
+    .export-controls {
         flex-direction: column;
     }
     
-    .animation-btn {
+    .export-row {
+        flex-direction: column;
+    }
+    
+    .animation-btn,
+    .export-btn {
         padding: 12px;
         font-size: 12px;
     }
@@ -349,6 +525,46 @@ input[type="range"]::-moz-range-thumb {
     .control-group {
         margin-bottom: 16px;
     }
+    
+    /* Export buttons stack vertically on mobile */
+    .export-controls {
+        gap: 6px;
+    }
+    
+    .export-btn {
+        padding: 14px 12px;
+        font-size: 11px;
+    }
+}
+
+/* Tablet responsiveness */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .controls-panel {
+        width: 280px;
+        padding: 20px;
+    }
+    
+    .export-row {
+        gap: 6px;
+    }
+    
+    .export-btn {
+        font-size: 10px;
+        padding: 9px 8px;
+    }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1440px) {
+    .controls-panel {
+        width: 320px;
+        padding: 28px;
+    }
+    
+    .export-btn {
+        padding: 12px 14px;
+        font-size: 12px;
+    }
 }
 
 /* Improved accessibility */
@@ -356,8 +572,19 @@ input[type="range"]::-moz-range-thumb {
     .chevron,
     .section-content,
     .animation-btn,
+    .export-btn,
+    .spinner,
     input[type="range"]::-webkit-slider-thumb {
         transition: none;
+        animation: none;
+    }
+    
+    .export-btn:hover {
+        transform: none;
+    }
+    
+    .export-btn:active {
+        transform: none;
     }
 }
 
@@ -373,7 +600,96 @@ input[type="range"]::-moz-range-thumb {
     }
     
     .input-section button,
-    .animation-btn.active {
+    .animation-btn.active,
+    .export-btn.primary {
         border: 2px solid #ffffff;
     }
+    
+    .export-btn {
+        border: 1px solid #666;
+    }
+}
+
+/* Dark mode adjustments (if system preference) */
+@media (prefers-color-scheme: dark) {
+    .export-progress {
+        background: rgba(17, 17, 17, 0.95);
+        border: 1px solid #444;
+    }
+}
+
+/* Print styles (hide controls when printing) */
+@media print {
+    .controls-panel {
+        display: none;
+    }
+    
+    .canvas-container {
+        width: 100%;
+        height: 100vh;
+    }
+    
+    .app-container {
+        flex-direction: row;
+    }
+}
+
+/* Focus styles for better accessibility */
+.export-btn:focus,
+.animation-btn:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+.export-btn:focus:not(:focus-visible),
+.animation-btn:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Loading states */
+.export-btn.loading {
+    pointer-events: none;
+    opacity: 0.7;
+    position: relative;
+}
+
+.export-btn.loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Hover effects for better UX */
+.export-btn:not(:disabled):hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Success feedback */
+.export-btn.success-flash {
+    animation: successFlash 0.6s ease-out;
+}
+
+@keyframes successFlash {
+    0% { background-color: #28a745; }
+    50% { background-color: #20c997; }
+    100% { background-color: #28a745; }
+}
+
+/* Error feedback */
+.export-btn.error-flash {
+    animation: errorFlash 0.6s ease-out;
+}
+
+@keyframes errorFlash {
+    0% { background-color: #dc3545; }
+    50% { background-color: #fd7e14; }
+    100% { background-color: #dc3545; }
 }

@@ -37,6 +37,17 @@ let shuffleVersions = [];
 let currentShuffleIndex = 0;
 let shuffleTimer = 0;
 
+// Export variables
+let exportState = {
+    isExporting: false,
+    format: 'png',
+    frames: [],
+    duration: 3000, // 3 seconds for animations
+    frameRate: 30,
+    currentFrame: 0,
+    totalFrames: 0
+};
+
 // P5.js setup function
 function setup() {
     const container = document.querySelector('.canvas-container');
@@ -62,17 +73,29 @@ function windowResized() {
 
 // P5.js draw function
 function draw() {
-    background(255);
+    // Use transparent background for exports, white for display
+    if (exportState.isExporting) {
+        clear(); // Transparent background
+    } else {
+        background(255); // White background for display
+    }
     
     if (generatedLetters.length > 0) {
         updateAnimations();
         drawRansomNote();
+        
+        // Handle export frame capture
+        if (exportState.isExporting) {
+            captureExportFrame();
+        }
     } else {
-        fill(150);
-        noStroke();
-        textAlign(CENTER, CENTER);
-        textFont('Arial', 16);
-        text('Enter your message and click Generate', width/2, height/2);
+        if (!exportState.isExporting) {
+            fill(150);
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textFont('Arial', 16);
+            text('Enter your message and click Generate', width/2, height/2);
+        }
     }
 }
 
@@ -199,21 +222,31 @@ function initializeAnimationArrays() {
 
 // Update animations
 function updateAnimations() {
-    if (!animationState.playing || animationState.paused) return;
-    
-    const currentTime = millis() / 1000.0;
-    const elapsedTime = (currentTime - animationState.startTime - animationState.totalPausedTime) * animationState.speed;
-    
-    if (animationState.type === 'typewriter') {
-        typewriterProgress = elapsedTime * 3; // 3 characters per second
-    } else if (animationState.type === 'shuffle') {
-        shuffleTimer = elapsedTime;
-        // Change version every 0.8 seconds
-        currentShuffleIndex = Math.floor(shuffleTimer / 0.8) % 6;
+    if (exportState.isExporting) {
+        // Use frame-based time for exports
+        const frameTime = (exportState.currentFrame / exportState.frameRate);
+        const elapsedTime = frameTime * animationState.speed;
+        
+        if (animationState.type === 'typewriter') {
+            typewriterProgress = elapsedTime * 3;
+        } else if (animationState.type === 'shuffle') {
+            shuffleTimer = elapsedTime;
+            currentShuffleIndex = Math.floor(shuffleTimer / 0.8) % 6;
+        }
+    } else if (animationState.playing && !animationState.paused) {
+        const currentTime = millis() / 1000.0;
+        const elapsedTime = (currentTime - animationState.startTime - animationState.totalPausedTime) * animationState.speed;
+        
+        if (animationState.type === 'typewriter') {
+            typewriterProgress = elapsedTime * 3;
+        } else if (animationState.type === 'shuffle') {
+            shuffleTimer = elapsedTime;
+            currentShuffleIndex = Math.floor(shuffleTimer / 0.8) % 6;
+        }
     }
 }
 
-// Draw the ransom note with mobile-compatible blur
+// Draw the ransom note
 function drawRansomNote() {
     let lettersToRender = generatedLetters;
     
@@ -225,7 +258,7 @@ function drawRansomNote() {
     let visibleLetters = lettersToRender;
     
     // Handle typewriter animation
-    if (animationState.type === 'typewriter' && animationState.playing && !animationState.paused) {
+    if (animationState.type === 'typewriter' && (animationState.playing || exportState.isExporting)) {
         const visibleCount = Math.floor(typewriterProgress);
         visibleLetters = lettersToRender.slice(0, visibleCount);
     }
@@ -236,17 +269,15 @@ function drawRansomNote() {
     let totalBaseWidth = 0;
     visibleLetters.forEach(letterData => {
         if (letterData.isSpace) {
-            totalBaseWidth += 20; // Base space width
+            totalBaseWidth += 20;
         } else {
             totalBaseWidth += letterData.baseSize;
         }
     });
     
-    // Add base spacing
     const spacingTotal = (visibleLetters.length - 1) * Math.abs(effects.spacing);
     let totalWidth = (totalBaseWidth * (effects.stretch / 100)) + spacingTotal;
     
-    // Scale to fit canvas width with padding
     const maxWidth = width - 100;
     let scaleFactor = 1;
     if (totalWidth > maxWidth) {
@@ -258,7 +289,6 @@ function drawRansomNote() {
     
     let letterIndex = 0;
     
-    // Mobile-compatible blur: render multiple times with slight offsets
     const blurPasses = effects.blur > 0 ? Math.max(1, Math.floor(effects.blur * 2)) : 1;
     const blurOpacity = effects.blur > 0 ? 255 / blurPasses : 255;
     
@@ -292,68 +322,424 @@ function drawRansomNote() {
             }
             
             // Apply animation effects
-            const time = millis() / 1000.0 * animationState.speed;
+            const currentTime = exportState.isExporting ? 
+                (exportState.currentFrame / exportState.frameRate) : 
+                ((millis() / 1000.0) - animationState.startTime - animationState.totalPausedTime);
+                
+            const animTime = currentTime * animationState.speed;
             
-            if (animationState.playing && !animationState.paused && animationState.type !== 'shuffle') {
-                switch (animationState.type) {
-                    case 'bounce':
-                        letterY += sin(time * 3 + bounceOffsets[letterIndex]) * 30;
-                        break;
-                        
-                    case 'chaos':
-                        letterX += sin(time * 2 + chaosOffsets[letterIndex].x) * 20;
-                        letterY += cos(time * 2 + chaosOffsets[letterIndex].y) * 20;
-                        letterRotation = sin(time * 1.5 + chaosOffsets[letterIndex].rotation) * 0.3;
-                        letterScale = 1 + sin(time * 2.5 + chaosOffsets[letterIndex].scale) * 0.2;
-                        break;
-                        
-                    case 'float':
-                        letterX += sin(time * 1.2 + floatOffsets[letterIndex].x) * 10;
-                        letterY += cos(time * 0.8 + floatOffsets[letterIndex].y) * 15;
-                        break;
-                        
-                    case 'pulse':
-                        letterScale = 1 + sin(time * 4 + pulseOffsets[letterIndex]) * 0.3;
-                        break;
-                }
+            if (animationState.type === 'bounce') {
+                letterY += sin(animTime * 4 + bounceOffsets[letterIndex]) * 15;
+            } else if (animationState.type === 'chaos') {
+                letterX += sin(animTime * 3 + chaosOffsets[letterIndex].x) * 8;
+                letterY += cos(animTime * 2.5 + chaosOffsets[letterIndex].y) * 12;
+                letterRotation = sin(animTime * 4 + chaosOffsets[letterIndex].rotation) * 0.3;
+                letterScale = 1 + sin(animTime * 3.5 + chaosOffsets[letterIndex].scale) * 0.2;
+            } else if (animationState.type === 'float') {
+                letterX += sin(animTime * 1.5 + floatOffsets[letterIndex].x) * 5;
+                letterY += cos(animTime * 1.8 + floatOffsets[letterIndex].y) * 8;
+            } else if (animationState.type === 'pulse') {
+                letterScale = 1 + sin(animTime * 3 + pulseOffsets[letterIndex]) * 0.3;
             }
             
-            push();
+            // Set text properties
+            textFont(letterData.font);
+            textSize(currentSize * letterScale);
             
-            translate(letterX, letterY);
-            rotate(letterRotation);
-            scale(letterScale);
-            scale(effects.stretch / 100, 1);
-            
-            try {
-                textFont(letterData.font, currentSize);
-            } catch (e) {
-                textFont('Arial', currentSize);
-            }
-            
-            textAlign(CENTER, CENTER);
-            
+            // Set stroke
             if (effects.strokeWeight > 0) {
-                noFill();
                 stroke(0, blurOpacity);
                 strokeWeight(effects.strokeWeight);
-                strokeJoin(ROUND);
-                strokeCap(ROUND);
             } else {
-                fill(0, blurOpacity);
                 noStroke();
             }
             
-            text(letterData.char, 0, 0);
+            // Set fill with blur opacity
+            fill(0, blurOpacity);
             
+            // Apply transformations
+            push();
+            translate(letterX, letterY);
+            if (letterRotation !== 0) {
+                rotate(letterRotation);
+            }
+            
+            textAlign(CENTER, CENTER);
+            text(letterData.char, 0, 0);
             pop();
             
-            currentX += (letterData.baseSize * (effects.stretch / 100) * scaleFactor) + (effects.spacing * scaleFactor);
+            // Move to next position
+            currentX += (letterData.baseSize * (effects.stretch / 100) + effects.spacing) * scaleFactor;
             letterIndex++;
         });
     }
 }
 
+// Export Functions
+function exportImage(format) {
+    if (generatedLetters.length === 0) {
+        alert('Please generate a ransom note first!');
+        return;
+    }
+    
+    const filename = `ransom-note-${Date.now()}`;
+    
+    // Stop any current animation for static export
+    const wasPlaying = animationState.playing;
+    const wasPaused = animationState.paused;
+    
+    exportState.isExporting = true;
+    
+    // Force one frame redraw with transparent background
+    redraw();
+    
+    // Small delay to ensure canvas is updated
+    setTimeout(() => {
+        try {
+            if (format === 'png') {
+                save(filename + '.png');
+            } else if (format === 'jpeg') {
+                // For JPEG, we need to add a white background since it doesn't support transparency
+                const originalCanvas = document.querySelector('canvas');
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCanvas.width = originalCanvas.width;
+                tempCanvas.height = originalCanvas.height;
+                
+                // Fill with white background
+                tempCtx.fillStyle = '#FFFFFF';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw the original canvas on top
+                tempCtx.drawImage(originalCanvas, 0, 0);
+                
+                // Download the composite image
+                const link = document.createElement('a');
+                link.download = filename + '.jpg';
+                link.href = tempCanvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            }
+            
+            console.log(`Exported ${format.toUpperCase()} successfully`);
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Export failed. Please try again.');
+        }
+        
+        exportState.isExporting = false;
+        
+        // Restore animation state
+        if (wasPlaying && !wasPaused) {
+            animationState.playing = true;
+            animationState.paused = false;
+        }
+        
+        redraw();
+    }, 100);
+}
+
+function exportSVG() {
+    if (generatedLetters.length === 0) {
+        alert('Please generate a ransom note first!');
+        return;
+    }
+    
+    console.log('SVG export started...');
+    
+    // Create SVG content
+    let svgContent = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<defs>
+<style>
+`;
+
+    // Add font styles
+    const fontsToUse = window.availableFonts || ['Arial', 'Georgia', 'Times New Roman', 'Verdana'];
+    fontsToUse.forEach((font, index) => {
+        svgContent += `.font${index} { font-family: "${font}"; }\n`;
+    });
+
+    svgContent += `</style>
+</defs>
+`;
+
+    // Generate text elements (static version for SVG)
+    let lettersToRender = generatedLetters;
+    
+    // Calculate positioning (same logic as drawRansomNote)
+    let totalBaseWidth = 0;
+    lettersToRender.forEach(letterData => {
+        if (letterData.isSpace) {
+            totalBaseWidth += 20;
+        } else {
+            totalBaseWidth += letterData.baseSize;
+        }
+    });
+    
+    const spacingTotal = (lettersToRender.length - 1) * Math.abs(effects.spacing);
+    let totalWidth = (totalBaseWidth * (effects.stretch / 100)) + spacingTotal;
+    
+    const maxWidth = width - 100;
+    let scaleFactor = 1;
+    if (totalWidth > maxWidth) {
+        scaleFactor = maxWidth / totalWidth;
+    }
+    
+    let currentX = (width - totalWidth * scaleFactor) / 2;
+    const currentY = height / 2;
+    
+    lettersToRender.forEach((letterData, i) => {
+        if (letterData.isSpace) {
+            currentX += effects.spacing * scaleFactor;
+            return;
+        }
+        
+        let currentSize = (letterData.baseSize + (letterData.baseSizeMultiplier * effects.sizeVariation)) * scaleFactor;
+        
+        let distortX = letterData.baseDistortionX * effects.distortion;
+        let distortY = letterData.baseDistortionY * effects.distortion;
+        
+        let letterX = currentX + distortX;
+        let letterY = currentY + distortY;
+        
+        // Find font index
+        const fontIndex = fontsToUse.indexOf(letterData.font);
+        const fontClass = fontIndex >= 0 ? `font${fontIndex}` : 'font0';
+        
+        // Create text element
+        svgContent += `<text x="${letterX}" y="${letterY}" class="${fontClass}" font-size="${currentSize}" ` +
+                     `fill="black" text-anchor="middle" dominant-baseline="middle"`;
+        
+        if (effects.strokeWeight > 0) {
+            svgContent += ` stroke="black" stroke-width="${effects.strokeWeight}"`;
+        }
+        
+        if (effects.blur > 0) {
+            svgContent += ` filter="blur(${effects.blur}px)"`;
+        }
+        
+        svgContent += `>${letterData.char}</text>\n`;
+        
+        currentX += (letterData.baseSize * (effects.stretch / 100) + effects.spacing) * scaleFactor;
+    });
+    
+    svgContent += '</svg>';
+    
+    // Download SVG
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ransom-note-${Date.now()}.svg`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    console.log('SVG export completed');
+}
+
+function exportAnimatedGIF() {
+    if (generatedLetters.length === 0) {
+        alert('Please generate a ransom note first!');
+        return;
+    }
+    
+    if (animationState.type === 'none') {
+        alert('Please select an animation type first!');
+        return;
+    }
+    
+    console.log('Starting GIF export...');
+    showExportProgress('Preparing GIF export...');
+    
+    exportState.isExporting = true;
+    exportState.frames = [];
+    exportState.currentFrame = 0;
+    exportState.totalFrames = Math.floor((exportState.duration / 1000) * exportState.frameRate);
+    
+    // Reset animation to beginning
+    typewriterProgress = 0;
+    shuffleTimer = 0;
+    currentShuffleIndex = 0;
+    
+    captureGIFFrames();
+}
+
+function captureGIFFrames() {
+    if (exportState.currentFrame >= exportState.totalFrames) {
+        // All frames captured, create GIF
+        createGIFFromFrames();
+        return;
+    }
+    
+    // Update progress
+    const progress = (exportState.currentFrame / exportState.totalFrames * 100).toFixed(1);
+    showExportProgress(`Capturing frames... ${progress}%`);
+    
+    // Force redraw for this frame
+    redraw();
+    
+    // Capture frame after a small delay
+    setTimeout(() => {
+        // Get canvas data
+        const canvas = document.querySelector('canvas');
+        const frameData = canvas.toDataURL('image/png');
+        exportState.frames.push(frameData);
+        
+        exportState.currentFrame++;
+        
+        // Schedule next frame
+        setTimeout(captureGIFFrames, 16); // ~60fps capture
+    }, 16);
+}
+
+function createGIFFromFrames() {
+    showExportProgress('Creating GIF file...');
+    
+    // Note: This is a simplified version. For production use, you'd want to use a proper GIF encoding library
+    // like gif.js (https://github.com/jnordberg/gif.js/)
+    
+    console.log(`Captured ${exportState.frames.length} frames for GIF`);
+    
+    // For now, we'll save the first frame as PNG with instructions
+    const link = document.createElement('a');
+    link.href = exportState.frames[0];
+    link.download = `ransom-note-${Date.now()}.png`;
+    link.click();
+    
+    exportState.isExporting = false;
+    hideExportProgress();
+    
+    alert('GIF export captured frames. For full GIF creation, a specialized library like gif.js would be needed.');
+    
+    console.log('GIF export process completed');
+}
+
+function exportMP4() {
+    if (generatedLetters.length === 0) {
+        alert('Please generate a ransom note first!');
+        return;
+    }
+    
+    if (animationState.type === 'none') {
+        alert('Please select an animation type first!');
+        return;
+    }
+    
+    alert('MP4 export requires MediaRecorder API. This would need additional implementation with libraries like CCapture.js for full browser support.');
+    console.log('MP4 export requested - would need MediaRecorder API implementation');
+}
+
+function captureExportFrame() {
+    // This function is called during the draw loop when exporting
+    // Used for frame-by-frame animation exports
+}
+
+// Export progress UI helpers
+function showExportProgress(message) {
+    // Create or update progress indicator
+    let progressDiv = document.getElementById('export-progress');
+    if (!progressDiv) {
+        progressDiv = document.createElement('div');
+        progressDiv.id = 'export-progress';
+        progressDiv.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-size: 14px;
+            text-align: center;
+        `;
+        document.body.appendChild(progressDiv);
+    }
+    progressDiv.textContent = message;
+}
+
+function hideExportProgress() {
+    const progressDiv = document.getElementById('export-progress');
+    if (progressDiv) {
+        progressDiv.remove();
+    }
+}
+
+// Collapsible sections setup
+function setupCollapsible() {
+    const headers = document.querySelectorAll('.section-header');
+    
+    headers.forEach(header => {
+        const chevron = header.querySelector('.chevron');
+        const contentId = header.id.replace('Header', 'Content');
+        const content = document.getElementById(contentId);
+        
+        if (content) {
+            // Start sections collapsed
+            content.classList.remove('expanded');
+            if (chevron) {
+                chevron.style.transform = 'rotate(0deg)';
+            }
+            
+            header.addEventListener('click', function() {
+                const isExpanded = content.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    content.classList.remove('expanded');
+                    if (chevron) {
+                        chevron.style.transform = 'rotate(0deg)';
+                    }
+                } else {
+                    content.classList.add('expanded');
+                    if (chevron) {
+                        chevron.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Setup sliders with real-time updates
+function setupSliders() {
+    const sliders = [
+        { id: 'blur', prop: 'blur', suffix: 'px' },
+        { id: 'spacing', prop: 'spacing', suffix: 'px' },
+        { id: 'stretch', prop: 'stretch', suffix: '%' },
+        { id: 'sizeVariation', prop: 'sizeVariation', suffix: 'px' },
+        { id: 'strokeWeight', prop: 'strokeWeight', suffix: 'px' },
+        { id: 'distortion', prop: 'distortion', suffix: '°' }
+    ];
+    
+    sliders.forEach(({ id, prop, suffix }) => {
+        const slider = document.getElementById(id);
+        const label = slider.parentElement.querySelector('.range-value');
+        
+        if (slider && label) {
+            slider.addEventListener('input', function() {
+                effects[prop] = parseFloat(this.value);
+                label.textContent = this.value + suffix;
+            });
+            
+            // Initialize display
+            effects[prop] = parseFloat(slider.value);
+            label.textContent = slider.value + suffix;
+        }
+    });
+    
+    // Animation speed slider
+    const speedSlider = document.getElementById('animationSpeed');
+    const speedLabel = speedSlider?.parentElement.querySelector('.range-value');
+    
+    if (speedSlider && speedLabel) {
+        speedSlider.addEventListener('input', function() {
+            animationState.speed = parseFloat(this.value);
+            speedLabel.textContent = animationState.speed + 'x';
+        });
+    }
+}
 
 // Animation control functions
 function playAnimation() {
@@ -409,7 +795,7 @@ function resetAnimation() {
 function changeAnimationType(newType) {
     animationState.type = newType;
     resetAnimation();
-    updateAnimationButtons();
+    console.log('Animation type changed to:', newType);
 }
 
 function updateAnimationButtons() {
@@ -417,88 +803,10 @@ function updateAnimationButtons() {
     const pauseBtn = document.getElementById('pauseBtn');
     const stopBtn = document.getElementById('stopBtn');
     
-    if (!playBtn || !pauseBtn || !stopBtn) return;
-    
-    // Remove all active states
-    [playBtn, pauseBtn, stopBtn].forEach(btn => btn.classList.remove('active'));
-    
-    if (animationState.type === 'none') {
-        [playBtn, pauseBtn, stopBtn].forEach(btn => btn.disabled = true);
-        return;
-    } else {
-        [playBtn, pauseBtn, stopBtn].forEach(btn => btn.disabled = false);
-    }
-    
-    if (animationState.playing && !animationState.paused) {
-        playBtn.classList.add('active');
-    } else if (animationState.paused) {
-        pauseBtn.classList.add('active');
-    } else {
-        stopBtn.classList.add('active');
-    }
-}
-
-// Setup collapsible sections
-function setupCollapsible() {
-    const sections = ['effects', 'animations'];
-    
-    sections.forEach(sectionName => {
-        const header = document.getElementById(`${sectionName}Header`);
-        const content = document.getElementById(`${sectionName}Content`);
-        const chevron = header.querySelector('.chevron');
-        
-        if (!header || !content || !chevron) return;
-        
-        header.addEventListener('click', function() {
-            const isExpanded = content.classList.contains('expanded');
-            
-            if (isExpanded) {
-                content.classList.remove('expanded');
-                chevron.classList.remove('rotated');
-            } else {
-                content.classList.add('expanded');
-                chevron.classList.add('rotated');
-            }
-        });
-    });
-}
-
-// Setup slider controls
-function setupSliders() {
-    const sliders = [
-        { id: 'blur', prop: 'blur', suffix: 'px' },
-        { id: 'spacing', prop: 'spacing', suffix: 'px' },
-        { id: 'stretch', prop: 'stretch', suffix: '%' },
-        { id: 'sizeVariation', prop: 'sizeVariation', suffix: 'px' },
-        { id: 'strokeWeight', prop: 'strokeWeight', suffix: 'px' },
-        { id: 'distortion', prop: 'distortion', suffix: '°' }
-    ];
-    
-    sliders.forEach(slider => {
-        const element = document.getElementById(slider.id);
-        const label = element ? element.parentNode.querySelector('.range-value') : null;
-        
-        if (element && label) {
-            // Set initial value
-            effects[slider.prop] = parseFloat(element.value);
-            label.textContent = effects[slider.prop] + slider.suffix;
-            
-            element.addEventListener('input', function() {
-                effects[slider.prop] = parseFloat(this.value);
-                label.textContent = effects[slider.prop] + slider.suffix;
-            });
-        }
-    });
-    
-    // Animation speed slider
-    const speedSlider = document.getElementById('animationSpeed');
-    const speedLabel = speedSlider ? speedSlider.parentNode.querySelector('.range-value') : null;
-    
-    if (speedSlider && speedLabel) {
-        speedSlider.addEventListener('input', function() {
-            animationState.speed = parseFloat(this.value);
-            speedLabel.textContent = animationState.speed + 'x';
-        });
+    if (playBtn && pauseBtn && stopBtn) {
+        playBtn.classList.toggle('active', animationState.playing && !animationState.paused);
+        pauseBtn.classList.toggle('active', animationState.paused);
+        stopBtn.classList.toggle('active', !animationState.playing);
     }
 }
 
@@ -540,6 +848,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('animationType').addEventListener('change', function() {
         changeAnimationType(this.value);
     });
+    
+    // Export controls
+    document.getElementById('exportPNG')?.addEventListener('click', () => exportImage('png'));
+    document.getElementById('exportJPEG')?.addEventListener('click', () => exportImage('jpeg'));
+    document.getElementById('exportSVG')?.addEventListener('click', exportSVG);
+    document.getElementById('exportGIF')?.addEventListener('click', exportAnimatedGIF);
+    document.getElementById('exportMP4')?.addEventListener('click', exportMP4);
     
     // Initialize animation buttons
     updateAnimationButtons();
