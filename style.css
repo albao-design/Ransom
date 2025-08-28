@@ -116,21 +116,17 @@ header p {
 .collapsible-section {
     margin-bottom: 24px;
     border-bottom: 1px solid #333;
-    padding-bottom: 24px;
-}
-
-.collapsible-section:last-child {
-    border-bottom: none;
+    padding-bottom: 16px;
 }
 
 .section-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    cursor: pointer;
+    justify-content: space-between;
     padding: 12px 0;
-    user-select: none;
+    cursor: pointer;
     transition: color 0.2s ease;
+    user-select: none;
 }
 
 .section-header:hover {
@@ -138,43 +134,42 @@ header p {
 }
 
 .section-header h3 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
-    color: #ffffff;
+    color: inherit;
     margin: 0;
-    transition: color 0.2s ease;
-}
-
-.section-header:hover h3 {
-    color: #0066cc;
 }
 
 .chevron {
+    transition: transform 0.3s ease;
     color: #888;
-    transition: transform 0.3s ease, color 0.2s ease;
-}
-
-.section-header:hover .chevron {
-    color: #0066cc;
+    flex-shrink: 0;
+    transform: rotate(-90deg); /* Start pointing right (closed) */
 }
 
 .chevron.rotated {
-    transform: rotate(180deg);
+    transform: rotate(0deg); /* Point down when open */
 }
 
 .section-content {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
 }
 
 .section-content.expanded {
     max-height: 1000px;
+    opacity: 1;
 }
 
 .control-group {
     margin-bottom: 20px;
     margin-top: 16px;
+}
+
+.control-group:first-child {
+    margin-top: 8px;
 }
 
 .control-group label {
@@ -193,6 +188,7 @@ header p {
     font-weight: 400;
 }
 
+
 /* Range slider styles */
 input[type="range"] {
     -webkit-appearance: none;
@@ -203,6 +199,26 @@ input[type="range"] {
     outline: none;
     cursor: pointer;
 }
+
+/* Add this to your existing style.css */
+
+/* Better mobile blur support */
+#p5-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    /* Enable hardware acceleration for better filter performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: filter;
+}
+
+/* Ensure blur works on webkit browsers (Safari, Chrome mobile) */
+.blur-enabled {
+    -webkit-filter: blur(var(--blur-amount));
+    filter: blur(var(--blur-amount));
+}
+
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;

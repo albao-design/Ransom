@@ -32,6 +32,11 @@ let chaosOffsets = [];
 let floatOffsets = [];
 let pulseOffsets = [];
 
+// Shuffle animation variables
+let shuffleVersions = [];
+let currentShuffleIndex = 0;
+let shuffleTimer = 0;
+
 // Font array
 const availableFonts = [
     'Anton', 'Bebas Neue', 'Fredoka One', 'Righteous', 'Oswald', 'Fjalla One',
@@ -49,7 +54,6 @@ const availableFonts = [
     'Plus Jakarta Sans', 'Space Grotesk', 'Archivo', 'Assistant', 'Heebo',
     'Karla', 'Oxygen', 'PT Sans', 'Quicksand', 'Titillium Web', 'IBM Plex Sans',
     'Asap', 'Cabin', 'Hind', 'Varela Round', 'Prompt', 'Kanit',
-    'Sarabun', 'Tajawal', 'Almarai', 'Cairo', 'Amiri',
     'Playfair Display', 'Cormorant Garamond', 'Crimson Text', 'Libre Baskerville',
     'Lora', 'Merriweather', 'Source Serif Pro', 'Spectral', 'Vollkorn',
     'Cardo', 'Gentium Plus', 'Neuton', 'Old Standard TT', 'PT Serif',
@@ -61,18 +65,20 @@ const availableFonts = [
     'Shadows Into Light', 'Homemade Apple', 'Covered By Your Grace', 'Kalam',
     'Patrick Hand', 'Architects Daughter', 'Coming Soon', 'Gloria Hallelujah',
     'Handlee', 'Reenie Beanie', 'Rock Salt', 'Schoolbell', 'Walter Turncoat',
-    'Allura', 'Sacramento', 'Cookie', 'Tangerine', 'Bad Script', 'Marck Script',
-    'Neucha', 'Pangolin', 'Gochi Hand', 'Sriracha', 'Caveat Brush', 'Khand',
     'Fira Code', 'JetBrains Mono', 'Space Mono', 'IBM Plex Mono', 'Source Code Pro',
     'Roboto Mono', 'Ubuntu Mono', 'PT Mono', 'Cousins', 'Anonymous Pro',
-    'Inconsolata', 'Noto Sans Mono', 'Overpass Mono', 'Red Hat Mono',
-    'DM Mono', 'Courier Prime', 'Nova Mono', 'VT323', 'Share Tech Mono', 'Major Mono Display',
-    'Barlow Condensed', 'Abel', 'Yanone Kaffeesatz', 'Pathway Gothic One',
-    'Arimo', 'Open Sans Condensed', 'PT Sans Narrow', 'Economica',
-    'Pontano Sans', 'Quantico', 'Allerta Stencil', 'Saira Extra Condensed',
-    'Creepster', 'Eater', 'Nosifer', 'Butcherman', 'Griffy', 'Chela One',
-    'New Rocker', 'Metal Mania', 'Pirata One', 'Caesar Dressing'
+    'Inconsolata', 'Noto Sans Mono', 'Overpass Mono', 'Red Hat Mono'
 ];
+
+// Load Google Fonts
+function loadGoogleFonts() {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=' + availableFonts.map(font => 
+        font.replace(/ /g, '+')
+    ).join('&family=') + '&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+}
 
 // P5.js setup function
 function setup() {
@@ -112,31 +118,6 @@ function draw() {
         textFont('Arial', 16);
         text('Enter your message and click Generate', width/2, height/2);
     }
-}
-
-// Load Google Fonts
-function loadGoogleFonts() {
-    const fontsPerLink = 40;
-    const totalLinks = Math.ceil(availableFonts.length / fontsPerLink);
-    
-    for (let i = 0; i < totalLinks; i++) {
-        const startIndex = i * fontsPerLink;
-        const endIndex = Math.min(startIndex + fontsPerLink, availableFonts.length);
-        const fontChunk = availableFonts.slice(startIndex, endIndex);
-        
-        const fontString = fontChunk
-            .map(font => font.replace(/ /g, '+'))
-            .join('&family=');
-        
-        const link = document.createElement('link');
-        link.href = `https://fonts.googleapis.com/css2?family=${fontString}&display=swap`;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-    }
-    
-    setTimeout(() => {
-        console.log('All fonts loaded and ready!');
-    }, 2000);
 }
 
 // Generate ransom note
@@ -184,9 +165,50 @@ function generateRansomNote() {
     }
     
     initializeAnimationArrays();
+    generateShuffleVersions();
     resetAnimation();
     
     console.log(`Generated ${generatedLetters.length} characters with varied fonts`);
+}
+
+// Generate 6 different shuffle versions
+function generateShuffleVersions() {
+    shuffleVersions = [];
+    
+    for (let v = 0; v < 6; v++) {
+        const version = [];
+        
+        for (let i = 0; i < currentText.length; i++) {
+            const char = currentText[i];
+            
+            if (char === ' ' || char.trim() === '') {
+                version.push({
+                    char: char,
+                    isSpace: true
+                });
+                continue;
+            }
+            
+            const randomFont = availableFonts[Math.floor(Math.random() * availableFonts.length)];
+            
+            const letterData = {
+                char: char,
+                isSpace: false,
+                font: randomFont,
+                baseSize: 30 + Math.random() * 20,
+                baseSizeMultiplier: 0.7 + Math.random() * 0.6,
+                baseDistortionX: (Math.random() - 0.5) * 2,
+                baseDistortionY: (Math.random() - 0.5) * 2,
+            };
+            
+            version.push(letterData);
+        }
+        
+        shuffleVersions.push(version);
+    }
+    
+    currentShuffleIndex = 0;
+    shuffleTimer = 0;
 }
 
 // Initialize animation arrays
@@ -223,17 +245,28 @@ function updateAnimations() {
     
     if (animationState.type === 'typewriter') {
         typewriterProgress = elapsedTime * 3; // 3 characters per second
+    } else if (animationState.type === 'shuffle') {
+        shuffleTimer = elapsedTime;
+        // Change version every 0.8 seconds
+        currentShuffleIndex = Math.floor(shuffleTimer / 0.8) % 6;
     }
 }
 
-// Draw the ransom note
+// Draw the ransom note with improved blur support
 function drawRansomNote() {
-    let visibleLetters = generatedLetters;
+    let lettersToRender = generatedLetters;
+    
+    // Handle shuffle animation
+    if (animationState.type === 'shuffle' && shuffleVersions.length > 0) {
+        lettersToRender = shuffleVersions[currentShuffleIndex];
+    }
+    
+    let visibleLetters = lettersToRender;
     
     // Handle typewriter animation
     if (animationState.type === 'typewriter' && animationState.playing && !animationState.paused) {
         const visibleCount = Math.floor(typewriterProgress);
-        visibleLetters = generatedLetters.slice(0, visibleCount);
+        visibleLetters = lettersToRender.slice(0, visibleCount);
     }
     
     if (visibleLetters.length === 0) return;
@@ -283,7 +316,7 @@ function drawRansomNote() {
         // Apply animation effects
         const time = millis() / 1000.0 * animationState.speed;
         
-        if (animationState.playing && !animationState.paused) {
+        if (animationState.playing && !animationState.paused && animationState.type !== 'shuffle') {
             switch (animationState.type) {
                 case 'bounce':
                     letterY += sin(time * 3 + bounceOffsets[letterIndex]) * 30;
@@ -309,8 +342,10 @@ function drawRansomNote() {
         
         push();
         
-        // Apply blur effect
+        // Improved blur implementation for mobile
         if (effects.blur > 0) {
+            // Use CSS filter for better mobile compatibility
+            drawingContext.save();
             drawingContext.filter = `blur(${effects.blur}px)`;
         }
         
@@ -340,6 +375,10 @@ function drawRansomNote() {
         
         text(letterData.char, 0, 0);
         
+        if (effects.blur > 0) {
+            drawingContext.restore();
+        }
+        
         pop();
         
         currentX += (letterData.baseSize * (effects.stretch / 100) * scaleFactor) + (effects.spacing * scaleFactor);
@@ -360,6 +399,9 @@ function playAnimation() {
         
         if (animationState.type === 'typewriter') {
             typewriterProgress = 0;
+        } else if (animationState.type === 'shuffle') {
+            shuffleTimer = 0;
+            currentShuffleIndex = 0;
         }
     }
     
@@ -380,6 +422,8 @@ function stopAnimation() {
     animationState.paused = false;
     animationState.totalPausedTime = 0;
     typewriterProgress = 0;
+    shuffleTimer = 0;
+    currentShuffleIndex = 0;
     updateAnimationButtons();
 }
 
@@ -387,6 +431,9 @@ function resetAnimation() {
     stopAnimation();
     if (animationState.type === 'typewriter') {
         typewriterProgress = 0;
+    } else if (animationState.type === 'shuffle') {
+        shuffleTimer = 0;
+        currentShuffleIndex = 0;
     }
 }
 
@@ -394,9 +441,11 @@ function changeAnimationType(newType) {
     const oldType = animationState.type;
     animationState.type = newType;
     
-    // Don't regenerate, just reset animation state
     if (oldType !== newType) {
         resetAnimation();
+        if (newType === 'shuffle' && currentText) {
+            generateShuffleVersions();
+        }
     }
 }
 
@@ -405,36 +454,47 @@ function updateAnimationButtons() {
     const pauseBtn = document.getElementById('pauseBtn');
     const stopBtn = document.getElementById('stopBtn');
     
-    playBtn.classList.toggle('active', animationState.playing && !animationState.paused);
-    pauseBtn.classList.toggle('active', animationState.playing && animationState.paused);
-    stopBtn.classList.toggle('active', !animationState.playing);
+    // Remove active class from all buttons
+    [playBtn, pauseBtn, stopBtn].forEach(btn => btn.classList.remove('active'));
+    
+    if (animationState.playing && !animationState.paused) {
+        playBtn.classList.add('active');
+    } else if (animationState.paused) {
+        pauseBtn.classList.add('active');
+    } else {
+        stopBtn.classList.add('active');
+    }
 }
 
 // Setup collapsible sections
 function setupCollapsible() {
-    const sections = [
-        { header: 'effectsHeader', content: 'effectsContent' },
-        { header: 'animationsHeader', content: 'animationsContent' }
-    ];
+    const sections = document.querySelectorAll('.collapsible-section');
     
     sections.forEach(section => {
-        const header = document.getElementById(section.header);
-        const content = document.getElementById(section.content);
+        const header = section.querySelector('.section-header');
+        const content = section.querySelector('.section-content');
         const chevron = header.querySelector('.chevron');
         
+        // Start closed - use the CSS classes instead of inline styles
+        content.classList.remove('expanded');
+        chevron.classList.remove('rotated');
+        
         header.addEventListener('click', function() {
-            const isExpanded = content.classList.contains('expanded');
+            const isOpen = content.classList.contains('expanded');
             
-            if (isExpanded) {
+            if (isOpen) {
+                // Close the section
                 content.classList.remove('expanded');
                 chevron.classList.remove('rotated');
             } else {
+                // Open the section
                 content.classList.add('expanded');
                 chevron.classList.add('rotated');
             }
         });
     });
 }
+
 
 // Setup slider controls
 function setupSliders() {
@@ -518,4 +578,3 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Event listeners attached successfully');
 });
-
