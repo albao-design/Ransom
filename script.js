@@ -37,49 +37,6 @@ let shuffleVersions = [];
 let currentShuffleIndex = 0;
 let shuffleTimer = 0;
 
-// Font array
-const availableFonts = [
-    'Anton', 'Bebas Neue', 'Fredoka One', 'Righteous', 'Oswald', 'Fjalla One',
-    'Alfa Slab One', 'Bungee', 'Bangers', 'Black Ops One', 'Bungee Shade',
-    'Monoton', 'Wallpoet', 'Squada One', 'Audiowide', 'Orbitron', 'Russo One',
-    'Teko', 'Exo 2', 'Rajdhani', 'Saira Condensed', 'Chakra Petch', 'Staatliches',
-    'Passion One', 'Luckiest Guy', 'Bowlby One', 'Bowlby One SC', 'Ultra',
-    'Modak', 'Rammetto One', 'Shrikhand', 'Faster One', 'Megrim', 'Iceberg',
-    'Jura', 'Michroma', 'Electrolize', 'Aldrich', 'Wire One',
-    'Syncopate', 'Allerta', 'Advent Pro', 'Exo', 'Share Tech Mono', 'Gruppo',
-    'Stalinist One', 'Yellowtail', 'Lalezar', 'Bungee Inline',
-    'Montserrat', 'Open Sans', 'Roboto', 'Lato', 'Source Sans Pro', 'Nunito',
-    'Raleway', 'Ubuntu', 'Poppins', 'Inter', 'Fira Sans', 'Work Sans',
-    'Barlow', 'Rubik', 'DM Sans', 'Manrope', 'Red Hat Display', 'Outfit',
-    'Plus Jakarta Sans', 'Space Grotesk', 'Archivo', 'Assistant', 'Heebo',
-    'Karla', 'Oxygen', 'PT Sans', 'Quicksand', 'Titillium Web', 'IBM Plex Sans',
-    'Asap', 'Cabin', 'Hind', 'Varela Round', 'Prompt', 'Kanit',
-    'Playfair Display', 'Cormorant Garamond', 'Crimson Text', 'Libre Baskerville',
-    'Lora', 'Merriweather', 'Source Serif Pro', 'Spectral', 'Vollkorn',
-    'Cardo', 'Gentium Plus', 'Neuton', 'Old Standard TT', 'PT Serif',
-    'Bitter', 'Domine', 'Noticia Text', 'Tinos', 'Gelasio', 'IBM Plex Serif',
-    'Abril Fatface', 'Crete Round', 'Arvo', 'Rokkitt', 'Slabo 27px',
-    'Alegreya', 'Crimson Pro', 'Literata', 'Zilla Slab', 'Roboto Slab',
-    'Caveat', 'Dancing Script', 'Pacifico', 'Lobster', 'Great Vibes', 'Satisfy',
-    'Kaushan Script', 'Amatic SC', 'Indie Flower', 'Permanent Marker',
-    'Shadows Into Light', 'Homemade Apple', 'Covered By Your Grace', 'Kalam',
-    'Patrick Hand', 'Architects Daughter', 'Coming Soon', 'Gloria Hallelujah',
-    'Handlee', 'Reenie Beanie', 'Rock Salt', 'Schoolbell', 'Walter Turncoat',
-    'Fira Code', 'JetBrains Mono', 'Space Mono', 'IBM Plex Mono', 'Source Code Pro',
-    'Roboto Mono', 'Ubuntu Mono', 'PT Mono', 'Cousins', 'Anonymous Pro',
-    'Inconsolata', 'Noto Sans Mono', 'Overpass Mono', 'Red Hat Mono'
-];
-
-// Load Google Fonts
-function loadGoogleFonts() {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=' + availableFonts.map(font => 
-        font.replace(/ /g, '+')
-    ).join('&family=') + '&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-}
-
 // P5.js setup function
 function setup() {
     const container = document.querySelector('.canvas-container');
@@ -90,10 +47,9 @@ function setup() {
     canvas.parent('p5-container');
     
     textAlign(CENTER, CENTER);
-    loadGoogleFonts();
     
     console.log(`Canvas setup complete: ${canvasWidth}x${canvasHeight}`);
-    console.log('Total fonts available:', availableFonts.length);
+    console.log('Total fonts available:', window.availableFonts ? window.availableFonts.length : 0);
 }
 
 // Handle window resize
@@ -130,6 +86,9 @@ function generateRansomNote() {
     console.log('Generating ransom note for:', currentText);
     generatedLetters = [];
     
+    // Use fonts from fonts.js or fallback
+    const fontsToUse = window.availableFonts || ['Arial', 'Georgia', 'Times New Roman', 'Verdana'];
+    
     for (let i = 0; i < currentText.length; i++) {
         const char = currentText[i];
         
@@ -149,7 +108,7 @@ function generateRansomNote() {
             continue;
         }
         
-        const randomFont = availableFonts[Math.floor(Math.random() * availableFonts.length)];
+        const randomFont = fontsToUse[Math.floor(Math.random() * fontsToUse.length)];
         
         const letterData = {
             char: char,
@@ -173,6 +132,8 @@ function generateRansomNote() {
 
 // Generate 6 different shuffle versions
 function generateShuffleVersions() {
+    const fontsToUse = window.availableFonts || ['Arial', 'Georgia', 'Times New Roman', 'Verdana'];
+    
     shuffleVersions = [];
     
     for (let v = 0; v < 6; v++) {
@@ -189,7 +150,7 @@ function generateShuffleVersions() {
                 continue;
             }
             
-            const randomFont = availableFonts[Math.floor(Math.random() * availableFonts.length)];
+            const randomFont = fontsToUse[Math.floor(Math.random() * fontsToUse.length)];
             
             const letterData = {
                 char: char,
@@ -344,7 +305,6 @@ function drawRansomNote() {
         
         // Improved blur implementation for mobile
         if (effects.blur > 0) {
-            // Use CSS filter for better mobile compatibility
             drawingContext.save();
             drawingContext.filter = `blur(${effects.blur}px)`;
         }
@@ -438,15 +398,9 @@ function resetAnimation() {
 }
 
 function changeAnimationType(newType) {
-    const oldType = animationState.type;
     animationState.type = newType;
-    
-    if (oldType !== newType) {
-        resetAnimation();
-        if (newType === 'shuffle' && currentText) {
-            generateShuffleVersions();
-        }
-    }
+    resetAnimation();
+    updateAnimationButtons();
 }
 
 function updateAnimationButtons() {
@@ -454,8 +408,17 @@ function updateAnimationButtons() {
     const pauseBtn = document.getElementById('pauseBtn');
     const stopBtn = document.getElementById('stopBtn');
     
-    // Remove active class from all buttons
+    if (!playBtn || !pauseBtn || !stopBtn) return;
+    
+    // Remove all active states
     [playBtn, pauseBtn, stopBtn].forEach(btn => btn.classList.remove('active'));
+    
+    if (animationState.type === 'none') {
+        [playBtn, pauseBtn, stopBtn].forEach(btn => btn.disabled = true);
+        return;
+    } else {
+        [playBtn, pauseBtn, stopBtn].forEach(btn => btn.disabled = false);
+    }
     
     if (animationState.playing && !animationState.paused) {
         playBtn.classList.add('active');
@@ -468,26 +431,22 @@ function updateAnimationButtons() {
 
 // Setup collapsible sections
 function setupCollapsible() {
-    const sections = document.querySelectorAll('.collapsible-section');
+    const sections = ['effects', 'animations'];
     
-    sections.forEach(section => {
-        const header = section.querySelector('.section-header');
-        const content = section.querySelector('.section-content');
+    sections.forEach(sectionName => {
+        const header = document.getElementById(`${sectionName}Header`);
+        const content = document.getElementById(`${sectionName}Content`);
         const chevron = header.querySelector('.chevron');
         
-        // Start closed - use the CSS classes instead of inline styles
-        content.classList.remove('expanded');
-        chevron.classList.remove('rotated');
+        if (!header || !content || !chevron) return;
         
         header.addEventListener('click', function() {
-            const isOpen = content.classList.contains('expanded');
+            const isExpanded = content.classList.contains('expanded');
             
-            if (isOpen) {
-                // Close the section
+            if (isExpanded) {
                 content.classList.remove('expanded');
                 chevron.classList.remove('rotated');
             } else {
-                // Open the section
                 content.classList.add('expanded');
                 chevron.classList.add('rotated');
             }
@@ -495,43 +454,43 @@ function setupCollapsible() {
     });
 }
 
-
 // Setup slider controls
 function setupSliders() {
     const sliders = [
-        { id: 'blur', property: 'blur', suffix: 'px' },
-        { id: 'spacing', property: 'spacing', suffix: 'px' },
-        { id: 'stretch', property: 'stretch', suffix: '%' },
-        { id: 'sizeVariation', property: 'sizeVariation', suffix: 'px' },
-        { id: 'strokeWeight', property: 'strokeWeight', suffix: 'px' },
-        { id: 'distortion', property: 'distortion', suffix: '°' }
+        { id: 'blur', prop: 'blur', suffix: 'px' },
+        { id: 'spacing', prop: 'spacing', suffix: 'px' },
+        { id: 'stretch', prop: 'stretch', suffix: '%' },
+        { id: 'sizeVariation', prop: 'sizeVariation', suffix: 'px' },
+        { id: 'strokeWeight', prop: 'strokeWeight', suffix: 'px' },
+        { id: 'distortion', prop: 'distortion', suffix: '°' }
     ];
     
     sliders.forEach(slider => {
         const element = document.getElementById(slider.id);
-        const valueSpan = element.parentElement.querySelector('.range-value');
+        const label = element ? element.parentNode.querySelector('.range-value') : null;
         
-        element.addEventListener('input', function() {
-            const value = parseFloat(this.value);
-            effects[slider.property] = value;
-            valueSpan.textContent = value + slider.suffix;
-        });
-        
-        // Initialize display
-        valueSpan.textContent = effects[slider.property] + slider.suffix;
+        if (element && label) {
+            // Set initial value
+            effects[slider.prop] = parseFloat(element.value);
+            label.textContent = effects[slider.prop] + slider.suffix;
+            
+            element.addEventListener('input', function() {
+                effects[slider.prop] = parseFloat(this.value);
+                label.textContent = effects[slider.prop] + slider.suffix;
+            });
+        }
     });
     
     // Animation speed slider
     const speedSlider = document.getElementById('animationSpeed');
-    const speedValue = speedSlider.parentElement.querySelector('.range-value');
+    const speedLabel = speedSlider ? speedSlider.parentNode.querySelector('.range-value') : null;
     
-    speedSlider.addEventListener('input', function() {
-        const value = parseFloat(this.value);
-        animationState.speed = value;
-        speedValue.textContent = value + 'x';
-    });
-    
-    speedValue.textContent = animationState.speed + 'x';
+    if (speedSlider && speedLabel) {
+        speedSlider.addEventListener('input', function() {
+            animationState.speed = parseFloat(this.value);
+            speedLabel.textContent = animationState.speed + 'x';
+        });
+    }
 }
 
 // Initialize the application

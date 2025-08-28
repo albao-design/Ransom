@@ -188,7 +188,6 @@ header p {
     font-weight: 400;
 }
 
-
 /* Range slider styles */
 input[type="range"] {
     -webkit-appearance: none;
@@ -199,26 +198,6 @@ input[type="range"] {
     outline: none;
     cursor: pointer;
 }
-
-/* Add this to your existing style.css */
-
-/* Better mobile blur support */
-#p5-container canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    /* Enable hardware acceleration for better filter performance */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: filter;
-}
-
-/* Ensure blur works on webkit browsers (Safari, Chrome mobile) */
-.blur-enabled {
-    -webkit-filter: blur(var(--blur-amount));
-    filter: blur(var(--blur-amount));
-}
-
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
@@ -231,10 +210,6 @@ input[type="range"]::-webkit-slider-thumb {
     transition: background-color 0.2s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
-    background: #0056b3;
-}
-
 input[type="range"]::-moz-range-thumb {
     width: 16px;
     height: 16px;
@@ -242,34 +217,23 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease;
 }
 
-input[type="range"]::-moz-range-thumb:hover {
-    background: #0056b3;
-}
-
-/* Animation controls */
+/* Select dropdown styles */
 .animation-select {
     width: 100%;
     padding: 8px 12px;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 6px;
+    border-radius: 4px;
     color: #ffffff;
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 16px;
-    padding-right: 36px;
+    outline: none;
 }
 
 .animation-select:focus {
-    outline: none;
     border-color: #0066cc;
 }
 
@@ -278,6 +242,7 @@ input[type="range"]::-moz-range-thumb:hover {
     color: #ffffff;
 }
 
+/* Animation controls */
 .animation-controls {
     display: flex;
     gap: 8px;
@@ -334,6 +299,16 @@ input[type="range"]::-moz-range-thumb:hover {
     display: block;
     width: 100% !important;
     height: 100% !important;
+    /* Enable hardware acceleration for better filter performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: filter;
+}
+
+/* Blur support for better mobile compatibility */
+.blur-enabled {
+    -webkit-filter: blur(var(--blur-amount));
+    filter: blur(var(--blur-amount));
 }
 
 /* Mobile responsiveness */
@@ -362,11 +337,13 @@ input[type="range"]::-moz-range-thumb:hover {
         padding: 12px;
         font-size: 12px;
     }
-}
-
-@media (max-width: 480px) {
+    
+    header h1 {
+        font-size: 18px;
+    }
+    
     .controls-panel {
-        padding: 12px;
+        padding: 16px;
     }
     
     .control-group {
@@ -374,20 +351,29 @@ input[type="range"]::-moz-range-thumb:hover {
     }
 }
 
-/* Scrollbar styling */
-.controls-panel::-webkit-scrollbar {
-    width: 6px;
+/* Improved accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .chevron,
+    .section-content,
+    .animation-btn,
+    input[type="range"]::-webkit-slider-thumb {
+        transition: none;
+    }
 }
 
-.controls-panel::-webkit-scrollbar-track {
-    background: #1a1a1a;
-}
-
-.controls-panel::-webkit-scrollbar-thumb {
-    background: #333;
-    border-radius: 3px;
-}
-
-.controls-panel::-webkit-scrollbar-thumb:hover {
-    background: #444;
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .controls-panel {
+        border-right: 2px solid #666;
+    }
+    
+    .input-section textarea,
+    .animation-select {
+        border: 2px solid #666;
+    }
+    
+    .input-section button,
+    .animation-btn.active {
+        border: 2px solid #ffffff;
+    }
 }
