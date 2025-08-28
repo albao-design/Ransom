@@ -213,7 +213,7 @@ function updateAnimations() {
     }
 }
 
-// Draw the ransom note with improved blur support
+// Draw the ransom note with mobile-compatible blur
 function drawRansomNote() {
     let lettersToRender = generatedLetters;
     
@@ -258,93 +258,102 @@ function drawRansomNote() {
     
     let letterIndex = 0;
     
-    visibleLetters.forEach((letterData, i) => {
-        if (letterData.isSpace) {
-            currentX += effects.spacing * scaleFactor;
-            return;
-        }
+    // Mobile-compatible blur: render multiple times with slight offsets
+    const blurPasses = effects.blur > 0 ? Math.max(1, Math.floor(effects.blur * 2)) : 1;
+    const blurOpacity = effects.blur > 0 ? 255 / blurPasses : 255;
+    
+    for (let blurPass = 0; blurPass < blurPasses; blurPass++) {
+        currentX = (width - totalWidth * scaleFactor) / 2;
+        letterIndex = 0;
         
-        let currentSize = (letterData.baseSize + (letterData.baseSizeMultiplier * effects.sizeVariation)) * scaleFactor;
-        
-        let distortX = letterData.baseDistortionX * effects.distortion;
-        let distortY = letterData.baseDistortionY * effects.distortion;
-        
-        let letterX = currentX + distortX;
-        let letterY = currentY + distortY;
-        let letterRotation = 0;
-        let letterScale = 1;
-        
-        // Apply animation effects
-        const time = millis() / 1000.0 * animationState.speed;
-        
-        if (animationState.playing && !animationState.paused && animationState.type !== 'shuffle') {
-            switch (animationState.type) {
-                case 'bounce':
-                    letterY += sin(time * 3 + bounceOffsets[letterIndex]) * 30;
-                    break;
-                    
-                case 'chaos':
-                    letterX += sin(time * 2 + chaosOffsets[letterIndex].x) * 20;
-                    letterY += cos(time * 2 + chaosOffsets[letterIndex].y) * 20;
-                    letterRotation = sin(time * 1.5 + chaosOffsets[letterIndex].rotation) * 0.3;
-                    letterScale = 1 + sin(time * 2.5 + chaosOffsets[letterIndex].scale) * 0.2;
-                    break;
-                    
-                case 'float':
-                    letterX += sin(time * 1.2 + floatOffsets[letterIndex].x) * 10;
-                    letterY += cos(time * 0.8 + floatOffsets[letterIndex].y) * 15;
-                    break;
-                    
-                case 'pulse':
-                    letterScale = 1 + sin(time * 4 + pulseOffsets[letterIndex]) * 0.3;
-                    break;
+        visibleLetters.forEach((letterData, i) => {
+            if (letterData.isSpace) {
+                currentX += effects.spacing * scaleFactor;
+                return;
             }
-        }
-        
-        push();
-        
-        // Improved blur implementation for mobile
-        if (effects.blur > 0) {
-            drawingContext.save();
-            drawingContext.filter = `blur(${effects.blur}px)`;
-        }
-        
-        translate(letterX, letterY);
-        rotate(letterRotation);
-        scale(letterScale);
-        scale(effects.stretch / 100, 1);
-        
-        try {
-            textFont(letterData.font, currentSize);
-        } catch (e) {
-            textFont('Arial', currentSize);
-        }
-        
-        textAlign(CENTER, CENTER);
-        
-        if (effects.strokeWeight > 0) {
-            noFill();
-            stroke(0);
-            strokeWeight(effects.strokeWeight);
-            strokeJoin(ROUND);
-            strokeCap(ROUND);
-        } else {
-            fill(0);
-            noStroke();
-        }
-        
-        text(letterData.char, 0, 0);
-        
-        if (effects.blur > 0) {
-            drawingContext.restore();
-        }
-        
-        pop();
-        
-        currentX += (letterData.baseSize * (effects.stretch / 100) * scaleFactor) + (effects.spacing * scaleFactor);
-        letterIndex++;
-    });
+            
+            let currentSize = (letterData.baseSize + (letterData.baseSizeMultiplier * effects.sizeVariation)) * scaleFactor;
+            
+            let distortX = letterData.baseDistortionX * effects.distortion;
+            let distortY = letterData.baseDistortionY * effects.distortion;
+            
+            let letterX = currentX + distortX;
+            let letterY = currentY + distortY;
+            let letterRotation = 0;
+            let letterScale = 1;
+            
+            // Add blur offset for multiple passes
+            if (effects.blur > 0 && blurPass > 0) {
+                const blurRadius = effects.blur * 2;
+                const angle = (blurPass / blurPasses) * TWO_PI;
+                const distance = (blurPass / blurPasses) * blurRadius;
+                letterX += cos(angle) * distance;
+                letterY += sin(angle) * distance;
+            }
+            
+            // Apply animation effects
+            const time = millis() / 1000.0 * animationState.speed;
+            
+            if (animationState.playing && !animationState.paused && animationState.type !== 'shuffle') {
+                switch (animationState.type) {
+                    case 'bounce':
+                        letterY += sin(time * 3 + bounceOffsets[letterIndex]) * 30;
+                        break;
+                        
+                    case 'chaos':
+                        letterX += sin(time * 2 + chaosOffsets[letterIndex].x) * 20;
+                        letterY += cos(time * 2 + chaosOffsets[letterIndex].y) * 20;
+                        letterRotation = sin(time * 1.5 + chaosOffsets[letterIndex].rotation) * 0.3;
+                        letterScale = 1 + sin(time * 2.5 + chaosOffsets[letterIndex].scale) * 0.2;
+                        break;
+                        
+                    case 'float':
+                        letterX += sin(time * 1.2 + floatOffsets[letterIndex].x) * 10;
+                        letterY += cos(time * 0.8 + floatOffsets[letterIndex].y) * 15;
+                        break;
+                        
+                    case 'pulse':
+                        letterScale = 1 + sin(time * 4 + pulseOffsets[letterIndex]) * 0.3;
+                        break;
+                }
+            }
+            
+            push();
+            
+            translate(letterX, letterY);
+            rotate(letterRotation);
+            scale(letterScale);
+            scale(effects.stretch / 100, 1);
+            
+            try {
+                textFont(letterData.font, currentSize);
+            } catch (e) {
+                textFont('Arial', currentSize);
+            }
+            
+            textAlign(CENTER, CENTER);
+            
+            if (effects.strokeWeight > 0) {
+                noFill();
+                stroke(0, blurOpacity);
+                strokeWeight(effects.strokeWeight);
+                strokeJoin(ROUND);
+                strokeCap(ROUND);
+            } else {
+                fill(0, blurOpacity);
+                noStroke();
+            }
+            
+            text(letterData.char, 0, 0);
+            
+            pop();
+            
+            currentX += (letterData.baseSize * (effects.stretch / 100) * scaleFactor) + (effects.spacing * scaleFactor);
+            letterIndex++;
+        });
+    }
 }
+
 
 // Animation control functions
 function playAnimation() {
