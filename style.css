@@ -91,9 +91,9 @@ header p {
 
 .input-section button {
     width: 100%;
-    padding: 12px 24px;
+    padding: 12px;
     background: #0066cc;
-    color: white;
+    color: #ffffff;
     border: none;
     border-radius: 6px;
     font-size: 14px;
@@ -112,21 +112,26 @@ header p {
     transform: translateY(1px);
 }
 
-/* COLLAPSIBLE SECTIONS */
+/* COLLAPSIBLE SECTION STYLES */
 .collapsible-section {
     margin-bottom: 24px;
     border-bottom: 1px solid #333;
-    padding-bottom: 16px;
+    padding-bottom: 24px;
+}
+
+.collapsible-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 0;
     cursor: pointer;
+    padding: 8px 0;
     transition: color 0.2s ease;
-    user-select: none;
 }
 
 .section-header:hover {
@@ -134,28 +139,29 @@ header p {
 }
 
 .section-header h3 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
-    color: inherit;
-    margin: 0;
+    color: #ffffff;
+}
+
+.section-header.expanded h3 {
+    color: #0066cc;
 }
 
 .chevron {
     transition: transform 0.3s ease;
     color: #888;
-    flex-shrink: 0;
-    transform: rotate(-90deg); /* Start pointing right (closed) */
 }
 
-.chevron.rotated {
-    transform: rotate(0deg); /* Point down when open */
+.section-header:hover .chevron {
+    color: #0066cc;
 }
 
 .section-content {
     max-height: 0;
+    opacity: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
 }
 
 .section-content.expanded {
@@ -163,6 +169,7 @@ header p {
     opacity: 1;
 }
 
+/* CONTROL GROUP STYLES */
 .control-group {
     margin-bottom: 20px;
     margin-top: 16px;
@@ -170,6 +177,10 @@ header p {
 
 .control-group:first-child {
     margin-top: 8px;
+}
+
+.control-group:last-child {
+    margin-bottom: 8px;
 }
 
 .control-group label {
@@ -188,7 +199,7 @@ header p {
     font-weight: 400;
 }
 
-/* Range slider styles */
+/* RANGE SLIDER STYLES */
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
@@ -197,6 +208,11 @@ input[type="range"] {
     border-radius: 2px;
     outline: none;
     cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+input[type="range"]:hover {
+    background: #444444;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -210,6 +226,10 @@ input[type="range"]::-webkit-slider-thumb {
     transition: background-color 0.2s ease;
 }
 
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #0056b3;
+}
+
 input[type="range"]::-moz-range-thumb {
     width: 16px;
     height: 16px;
@@ -217,32 +237,54 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
     border: none;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
-/* Select dropdown styles */
+input[type="range"]::-moz-range-thumb:hover {
+    background: #0056b3;
+}
+
+input[type="range"]::-moz-range-track {
+    background: #333333;
+    height: 4px;
+    border-radius: 2px;
+}
+
+/* ANIMATION CONTROLS */
 .animation-select {
     width: 100%;
     padding: 8px 12px;
     background: #1a1a1a;
     border: 1px solid #333;
-    border-radius: 4px;
+    border-radius: 6px;
     color: #ffffff;
     font-size: 13px;
     font-family: inherit;
     cursor: pointer;
-    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 36px;
+    transition: border-color 0.2s ease;
 }
 
 .animation-select:focus {
+    outline: none;
     border-color: #0066cc;
+}
+
+.animation-select:hover {
+    border-color: #444;
 }
 
 .animation-select option {
     background: #1a1a1a;
     color: #ffffff;
+    padding: 4px;
 }
 
-/* Animation controls */
 .animation-controls {
     display: flex;
     gap: 8px;
@@ -260,16 +302,21 @@ input[type="range"]::-moz-range-thumb {
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-.animation-btn:hover {
+.animation-btn:hover:not(:disabled) {
     background: #444;
 }
 
-.animation-btn:active {
+.animation-btn:active:not(:disabled) {
     background: #222;
     transform: translateY(1px);
+}
+
+.animation-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .animation-btn.active {
@@ -280,177 +327,7 @@ input[type="range"]::-moz-range-thumb {
     background: #0056b3;
 }
 
-/* EXPORT SECTION STYLES */
-.export-section {
-    margin-bottom: 0; /* Last section */
-}
-
-.export-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-.export-row {
-    display: flex;
-    gap: 8px;
-}
-
-.export-btn {
-    flex: 1;
-    padding: 10px 12px;
-    background: #2d2d2d;
-    color: #ffffff;
-    border: none;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-}
-
-.export-btn:hover {
-    background: #3d3d3d;
-    transform: translateY(-1px);
-}
-
-.export-btn:active {
-    background: #1d1d1d;
-    transform: translateY(0px);
-}
-
-.export-btn.primary {
-    background: #0066cc;
-}
-
-.export-btn.primary:hover {
-    background: #0056b3;
-}
-
-.export-btn.success {
-    background: #28a745;
-}
-
-.export-btn.success:hover {
-    background: #218838;
-}
-
-.export-btn.warning {
-    background: #fd7e14;
-}
-
-.export-btn.warning:hover {
-    background: #e8650e;
-}
-
-.export-btn:disabled {
-    background: #1a1a1a;
-    color: #666;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.export-btn:disabled:hover {
-    background: #1a1a1a;
-    transform: none;
-}
-
-/* Export format indicators */
-.export-btn::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.export-btn.static::after {
-    background: #28a745; /* Green for static formats */
-}
-
-.export-btn.animated::after {
-    background: #fd7e14; /* Orange for animated formats */
-}
-
-.export-btn.vector::after {
-    background: #6f42c1; /* Purple for vector formats */
-}
-
-.export-btn:hover::after {
-    opacity: 1;
-}
-
-/* Export progress styles */
-.export-progress {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 24px 32px;
-    border-radius: 8px;
-    z-index: 1000;
-    font-size: 14px;
-    text-align: center;
-    min-width: 200px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    border: 1px solid #333;
-}
-
-.export-progress .spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 2px solid #333;
-    border-radius: 50%;
-    border-top-color: #0066cc;
-    animation: spin 1s ease-in-out infinite;
-    margin-bottom: 12px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Export format descriptions */
-.export-description {
-    font-size: 11px;
-    color: #888;
-    margin-top: 8px;
-    line-height: 1.3;
-    text-align: left;
-}
-
-.export-description .format-note {
-    display: block;
-    margin-bottom: 4px;
-}
-
-.export-description .format-note.static {
-    color: #28a745;
-}
-
-.export-description .format-note.animated {
-    color: #fd7e14;
-}
-
-.export-description .format-note.vector {
-    color: #6f42c1;
-}
-
-/* Canvas container - full white background */
+/* CANVAS CONTAINER STYLES */
 .canvas-container {
     flex: 1;
     background: #ffffff;
@@ -458,6 +335,7 @@ input[type="range"]::-moz-range-thumb {
     align-items: center;
     justify-content: center;
     min-width: 0;
+    position: relative;
 }
 
 #p5-container {
@@ -475,13 +353,56 @@ input[type="range"]::-moz-range-thumb {
     will-change: filter;
 }
 
-/* Blur support for better mobile compatibility */
+/* Ensure blur works on webkit browsers (Safari, Chrome mobile) */
 .blur-enabled {
     -webkit-filter: blur(var(--blur-amount));
     filter: blur(var(--blur-amount));
 }
 
-/* Mobile responsiveness */
+/* SCROLLBAR STYLES */
+.controls-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.controls-panel::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+.controls-panel::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+.controls-panel::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* LOADING STATE */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+}
+
+/* ERROR STATES */
+.error-message {
+    color: #ff4444;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* FOCUS STYLES */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #0066cc;
+    outline-offset: 2px;
+}
+
+/* MOBILE RESPONSIVENESS */
 @media (max-width: 768px) {
     .app-container {
         flex-direction: column;
@@ -492,6 +413,8 @@ input[type="range"]::-moz-range-thumb {
         max-height: 50vh;
         order: 2;
         padding: 16px;
+        border-right: none;
+        border-top: 1px solid #333;
     }
     
     .canvas-container {
@@ -499,126 +422,98 @@ input[type="range"]::-moz-range-thumb {
         min-height: 50vh;
     }
     
-    .animation-controls,
-    .export-controls {
+    .animation-controls {
         flex-direction: column;
+        gap: 6px;
     }
     
-    .export-row {
-        flex-direction: column;
-    }
-    
-    .animation-btn,
-    .export-btn {
+    .animation-btn {
         padding: 12px;
         font-size: 12px;
+    }
+    
+    header {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
     }
     
     header h1 {
         font-size: 18px;
     }
     
-    .controls-panel {
-        padding: 16px;
+    .input-section {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+    }
+    
+    .collapsible-section {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
     }
     
     .control-group {
         margin-bottom: 16px;
     }
-    
-    /* Export buttons stack vertically on mobile */
-    .export-controls {
-        gap: 6px;
-    }
-    
-    .export-btn {
-        padding: 14px 12px;
-        font-size: 11px;
-    }
 }
 
-/* Tablet responsiveness */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (max-width: 480px) {
     .controls-panel {
-        width: 280px;
-        padding: 20px;
+        padding: 12px;
     }
     
-    .export-row {
-        gap: 6px;
+    header h1 {
+        font-size: 16px;
     }
     
-    .export-btn {
-        font-size: 10px;
-        padding: 9px 8px;
-    }
-}
-
-/* Large screen optimizations */
-@media (min-width: 1440px) {
-    .controls-panel {
-        width: 320px;
-        padding: 28px;
+    .input-section textarea {
+        min-height: 80px;
+        font-size: 13px;
     }
     
-    .export-btn {
-        padding: 12px 14px;
+    .control-group label {
         font-size: 12px;
     }
+    
+    .range-value {
+        font-size: 11px;
+    }
+    
+    .animation-select {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+    
+    .animation-btn {
+        font-size: 10px;
+        padding: 10px 8px;
+    }
 }
 
-/* Improved accessibility */
+/* HIGH DPI / RETINA DISPLAYS */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    #p5-container canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* DARK MODE ADJUSTMENTS (for future use) */
+@media (prefers-color-scheme: dark) {
+    /* Already using dark theme, but this ensures consistency */
+}
+
+/* REDUCED MOTION PREFERENCES */
 @media (prefers-reduced-motion: reduce) {
     .chevron,
     .section-content,
     .animation-btn,
-    .export-btn,
-    .spinner,
-    input[type="range"]::-webkit-slider-thumb {
+    input[type="range"]::-webkit-slider-thumb,
+    input[type="range"]::-moz-range-thumb {
         transition: none;
-        animation: none;
-    }
-    
-    .export-btn:hover {
-        transform: none;
-    }
-    
-    .export-btn:active {
-        transform: none;
     }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .controls-panel {
-        border-right: 2px solid #666;
-    }
-    
-    .input-section textarea,
-    .animation-select {
-        border: 2px solid #666;
-    }
-    
-    .input-section button,
-    .animation-btn.active,
-    .export-btn.primary {
-        border: 2px solid #ffffff;
-    }
-    
-    .export-btn {
-        border: 1px solid #666;
-    }
-}
-
-/* Dark mode adjustments (if system preference) */
-@media (prefers-color-scheme: dark) {
-    .export-progress {
-        background: rgba(17, 17, 17, 0.95);
-        border: 1px solid #444;
-    }
-}
-
-/* Print styles (hide controls when printing) */
+/* PRINT STYLES */
 @media print {
     .controls-panel {
         display: none;
@@ -629,67 +524,7 @@ input[type="range"]::-moz-range-thumb {
         height: 100vh;
     }
     
-    .app-container {
-        flex-direction: row;
+    body {
+        background: white;
     }
-}
-
-/* Focus styles for better accessibility */
-.export-btn:focus,
-.animation-btn:focus {
-    outline: 2px solid #0066cc;
-    outline-offset: 2px;
-}
-
-.export-btn:focus:not(:focus-visible),
-.animation-btn:focus:not(:focus-visible) {
-    outline: none;
-}
-
-/* Loading states */
-.export-btn.loading {
-    pointer-events: none;
-    opacity: 0.7;
-    position: relative;
-}
-
-.export-btn.loading::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-/* Hover effects for better UX */
-.export-btn:not(:disabled):hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Success feedback */
-.export-btn.success-flash {
-    animation: successFlash 0.6s ease-out;
-}
-
-@keyframes successFlash {
-    0% { background-color: #28a745; }
-    50% { background-color: #20c997; }
-    100% { background-color: #28a745; }
-}
-
-/* Error feedback */
-.export-btn.error-flash {
-    animation: errorFlash 0.6s ease-out;
-}
-
-@keyframes errorFlash {
-    0% { background-color: #dc3545; }
-    50% { background-color: #fd7e14; }
-    100% { background-color: #dc3545; }
 }
